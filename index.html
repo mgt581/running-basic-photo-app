@@ -6,48 +6,93 @@
   <title>AI Photo Studio</title>
   <meta name="theme-color" content="#4f46e5">
 
-  <!-- PWA / Icons -->
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=3">
   <link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png?v=3">
   <link rel="icon" type="image/png" href="/apple-touch-icon.png?v=3">
   <meta name="apple-mobile-web-app-title" content="AI Photo Studio">
 
-  <!-- iOS PWA niceties -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-  <!-- FREE, on-device background removal -->
   <script src="https://cdn.jsdelivr.net/npm/@imgly/background-removal@latest/dist/background-removal.min.js"></script>
 
   <style>
-    :root{--grad:linear-gradient(90deg,#6366f1,#8b5cf6)}
-    body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;background:#f9fafb;color:#111827}
-    header{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center;padding:16px 24px;border-bottom:1px solid #e5e7eb;background:#fff}
+    :root{
+      --grad:linear-gradient(90deg,#6366f1,#8b5cf6); /* Existing primary neon gradient */
+      --bg:#050816; /* Deep dark background */
+      --card-bg:#0d142a; /* Dark background for cards */
+      --text:#e5e7eb; /* Light text */
+      --muted:#94a3b8; /* Lighter muted text */
+      --border:rgba(148,163,184,.25); /* Subtle dark border */
+    }
+    body{
+      margin:0;
+      font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;
+      background:var(--bg); /* Use dark background variable */
+      color:var(--text); /* Use light text variable */
+    }
+    header{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      justify-content:space-between;
+      align-items:center;
+      padding:16px 24px;
+      border-bottom:1px solid var(--border); /* Use dark border variable */
+      background:var(--card-bg); /* Use dark card background */
+      box-shadow:0 2px 6px rgba(0,0,0,.5); /* Stronger shadow for lift */
+    }
     .brand{display:flex;align-items:center;gap:10px}
     .brand-img{width:28px;height:28px;border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,.15)}
     .brand-text{font-size:20px;font-weight:800;letter-spacing:.2px}
     .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
     .pill{background:var(--grad);color:#fff;border:0;padding:8px 16px;border-radius:9999px;cursor:pointer;font-size:14px;font-weight:700}
-    .ghost{background:#eef2ff;color:#4338ca;border:0;padding:8px 12px;border-radius:10px;font-weight:700;text-decoration:none;display:inline-block;cursor:pointer}
-    .muted{color:#6b7280;font-size:13px}
+    .ghost{
+      background:var(--card-bg); /* Dark ghost button background */
+      color:var(--text); /* Light text on ghost button */
+      border:1px solid var(--border); /* Dark ghost button border */
+      padding:8px 12px;
+      border-radius:10px;
+      font-weight:700;
+      text-decoration:none;
+      display:inline-block;
+      cursor:pointer;
+    }
+    .muted{color:var(--muted);font-size:13px} /* Use muted color variable */
     .wrap{max-width:900px;margin:0 auto;padding:24px;display:grid;gap:16px}
-    .card{background:#fff;padding:20px;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 2px 6px rgba(0,0,0,.05)}
-    .btn{height:44px;padding:0 16px;border-radius:10px;border:0;cursor:pointer;font-size:15px;font-weight:700;background:#e5e7eb;color:#111827}
-    .btn.primary{background:var(--grad);color:#fff}
-    .btn.warn{background:#fee2e2;color:#991b1b}
+    .card{
+      background:var(--card-bg); /* Dark card background */
+      padding:20px;
+      border:1px solid var(--border); /* Dark card border */
+      border-radius:12px;
+      box-shadow:0 2px 6px rgba(0,0,0,.15); /* Dark card shadow */
+    }
+    .btn{
+      height:44px;
+      padding:0 16px;
+      border-radius:10px;
+      border:0;
+      cursor:pointer;
+      font-size:15px;
+      font-weight:700;
+      background:#374151; /* Darker secondary button */
+      color:var(--text); /* Light text on secondary button */
+    }
+    .btn.primary{background:var(--grad);color:#fff} /* Retain neon gradient */
+    .btn.warn{background:#fee2e2;color:#991b1b} /* Retain warning style */
     .btn:disabled{opacity:.65;cursor:not-allowed}
-    .btn.primary:disabled{background:#e5e7eb;color:#111827}
-    .status{text-align:center;color:#6b7280;font-size:14px}
-    .stage{border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;position:relative}
-    canvas#stage{width:100%;height:auto;display:block;background:#f3f4f6}
+    .btn.primary:disabled{background:#374151;color:var(--text)} /* Disabled primary button style */
+    .status{text-align:center;color:var(--muted);font-size:14px} /* Use muted color */
+    .stage{border:1px solid var(--border);border-radius:12px;overflow:hidden;position:relative}
+    canvas#stage{width:100%;height:auto;display:block;background:#1f2937} /* Dark canvas background */
     canvas#mask{position:absolute;left:0;top:0;width:100%;height:100%;display:none;cursor:crosshair}
     .actions{display:grid;gap:12px}
-    .hint{font-size:13px;color:#6b7280;text-align:center}
-    .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:16px;background:#111827;color:#fff;padding:10px 14px;border-radius:10px;font-weight:700;box-shadow:0 6px 18px rgba(0,0,0,.25);z-index:9999}
+    .hint{font-size:13px;color:var(--muted);text-align:center} /* Use muted color */
+    .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:16px;background:#e5e7eb;color:#111827;padding:10px 14px;border-radius:10px;font-weight:700;box-shadow:0 6px 18px rgba(0,0,0,.25);z-index:9999}
     .toolbar{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
-    .badge{background:#eef2ff;color:#4338ca;border-radius:9999px;padding:6px 10px;font-weight:700;font-size:12px}
+    .badge{background:#4338ca;color:#eef2ff;border-radius:9999px;padding:6px 10px;font-weight:700;font-size:12px} /* Updated badge for contrast */
   </style>
 </head>
 <body>
@@ -84,7 +129,6 @@
           <button id="btnChange" class="btn" disabled onclick="Studio.changeBg()">Change Background</button>
           <button class="btn" onclick="document.getElementById('bgInput').click()">Choose Background</button>
 
-          <!-- Remove Person -->
           <button id="btnBrush" class="btn" disabled onclick="Studio.startBrush()">Remove Person (Brush)</button>
           <button id="btnApply" class="btn warn" style="display:none" onclick="Studio.applyInpaint()">Apply Removal</button>
           <button id="btnCancel" class="btn" style="display:none" onclick="Studio.cancelBrush()">Cancel</button>
@@ -108,7 +152,6 @@
     </div>
   </div>
 
-  <!-- Firebase (Compat) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -175,7 +218,7 @@
       const s=20; 
       for(let y=0;y<stage.height;y+=s){ 
         for(let x=0;x<stage.width;x+=s){ 
-          ctx.fillStyle=((x/s+y/s)%2===0)?'#e5e7eb':'#fff'; 
+          ctx.fillStyle=((x/s+y/s)%2===0)?'#1f2937':'#374151'; 
           ctx.fillRect(x,y,s,s); 
         } 
       } 
@@ -190,13 +233,13 @@
       const x = (stage.width - w) / 2;
       const y = stage.height / 2 + 12;
       const padX = 14, r = 10, bx = x - padX, by = y - 34, bw = w + padX*2, bh = 44;
-      ctx.fillStyle = "rgba(255,255,255,0.88)";
+      ctx.fillStyle = "rgba(13, 20, 42, 0.88)";
       ctx.beginPath();
       ctx.moveTo(bx+r, by); ctx.lineTo(bx+bw-r, by); ctx.quadraticCurveTo(bx+bw, by, bx+bw, by+r);
       ctx.lineTo(bx+bw, by+bh-r); ctx.quadraticCurveTo(bx+bw, by+bh, bx+bw-r, by+bh);
       ctx.lineTo(bx+r, by+bh); ctx.quadraticCurveTo(bx, by+bh, bx, by+bh-r);
       ctx.lineTo(bx, by+r); ctx.quadraticCurveTo(bx, by, bx+r, by); ctx.closePath(); ctx.fill();
-      ctx.fillStyle = "#111827"; ctx.fillText(text, x, y); ctx.restore();
+      ctx.fillStyle = "#e5e7eb"; ctx.fillText(text, x, y); ctx.restore();
     }
 
     const readFileURL = (f)=>new Promise((res,rej)=>{ 
@@ -392,7 +435,7 @@
         _progEl = document.createElement('div');
         _progEl.style.cssText = `
           position:fixed;left:50%;transform:translateX(-50%);
-          bottom:16px;z-index:99999;background:#111827;color:#fff;
+          bottom:16px;z-index:99999;background:#e5e7eb;color:#111827;
           padding:10px 14px;border-radius:10px;box-shadow:0 8px 20px rgba(0,0,0,.3);
           font-weight:700;min-width:240px;text-align:center
         `;
