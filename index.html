@@ -261,6 +261,16 @@
       if (on) toast("✅ Pro features available");
     }
 
+        const REDIRECT_PATH = "/signin.html";
+
+    // Simple check to prevent endless redirect loops
+    function shouldRedirect() {
+      const currentPath = window.location.pathname.toLowerCase();
+      const redirectPath = REDIRECT_PATH.toLowerCase();
+      // Only redirect if the current page is NOT the sign-in page.
+      return !currentPath.includes(redirectPath);
+    }
+
     auth.onAuthStateChanged(async user => {
       if (user) {
         const who = user.phoneNumber || user.email || (user.isAnonymous ? 'Guest mode' : 'Signed in');
@@ -272,6 +282,12 @@
         btnLogout.style.display = 'none';
         elTrialLeft.style.display = 'none';
         setPro(false);
+        
+        // ** REDIRECTION LOGIC ADDED HERE **
+        if (shouldRedirect()) {
+          console.log("User not signed in. Redirecting to signin.html");
+          window.location.replace(REDIRECT_PATH);
+        }
       }
     });
 
