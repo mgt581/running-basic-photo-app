@@ -35,7 +35,7 @@
     </button>
 
     <p style="text-align:center; margin-top:18px;">
-      Already have an account? <a href="/signin.html">Sign In</a>
+    <a Already have an account? <a href="signin.html">Sign In</a>
     </p>
   </div>
 
@@ -63,13 +63,13 @@
       const pass = document.getElementById("pass").value;
 
       auth.createUserWithEmailAndPassword(email, pass)
-        .then(() => window.location.href = "/profile.html")
+        .then(() => window.location.href = "profile.html")
         .catch(err => alert(err.message));
     }
 
     function signupGoogle() {
       auth.signInWithPopup(googleProvider)
-        .then(() => window.location.href = "/profile.html")
+        .then(() => window.location.href = "profile.html")
         .catch(err => alert("Google signup failed: " + err.message));
     }
   </script>
