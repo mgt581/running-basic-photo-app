@@ -146,9 +146,16 @@
     const btnTrial   = document.getElementById('btnTrial');
     const btnBuy     = document.getElementById('btnBuy');
     const elTrialLeft= document.getElementById('trialLeft');
-
     let proEnabled = false;
+  
+  // ENABLE STRIPE BUTTONS
+btnBuy.onclick = () => {
+    window.location.href = STRIPE_PAYMENT_LINK;
+};
 
+btnTrial.onclick = () => {
+    window.location.href = STRIPE_PAYMENT_LINK;
+};
     const $status = document.getElementById('status');
     const stage   = document.getElementById('stage');
     const ctx     = stage.getContext('2d', { willReadFrequently: true });
