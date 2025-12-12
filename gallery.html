@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>My Gallery - AI Photo Studio</title>
+  <style>
+    body{font-family:system-ui,-apple-system,sans-serif;background:#f9fafb;margin:0;padding:20px}
+    .header{max-width:1000px;margin:0 auto 20px;display:flex;justify-content:space-between;align-items:center}
+    h1{margin:0;font-size:24px;color:#111827}
+    .btn{background:#4f46e5;color:white;text-decoration:none;padding:8px 16px;border-radius:6px;font-weight:700;font-size:14px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(150px, 1fr));gap:15px;max-width:1000px;margin:0 auto}
+    .img-card{background:white;padding:5px;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.1);transition:transform 0.1s}
+    .img-card:hover{transform:scale(1.02)}
+    .img-card img{width:100%;height:auto;border-radius:4px;display:block}
+    .empty{text-align:center;grid-column:1/-1;color:#6b7280;padding:40px}
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>My Gallery</h1>
+  <a href="index.html" class="btn">Back to Studio</a>
+</div>
+
+<div class="grid" id="galleryGrid">
+  <div class="empty">Loading photos...</div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDsBDuaZ_rl7ro63Fv5gPh37EwSkfh-NqM",
+    authDomain: "aiphotostudioapp.firebaseapp.com",
+    projectId: "aiphotostudioapp",
+    storageBucket: "aiphotostudioapp.appspot.com",
+    messagingSenderId: "1056724519182",
+    appId: "1:1056724519182:web:93410e1b71a292e531ef5f"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+
+  const grid = document.getElementById('galleryGrid');
+
+  auth.onAuthStateChanged(async user => {
+    if (!user) {
+      grid.innerHTML = '<div class="empty">Please <a href="signin.html">sign in</a> to view your gallery.</div>';
+      return;
+    }
+
+    const snap = await db.collection('users').doc(user.uid).collection('gallery')
+                         .orderBy('createdAt', 'desc').get();
+
+    if (snap.empty) {
+      grid.innerHTML = '<div class="empty">No photos saved yet. <br><br> Go back to the Studio to create one!</div>';
+      return;
+    }
+
+    grid.innerHTML = ''; 
+    snap.forEach(doc => {
+      const data = doc.data();
+      const div = document.createElement('div');
+      div.className = 'img-card';
+      div.innerHTML = `<a href="${data.url}" target="_blank"><img src="${data.url}" loading="lazy" /></a>`;
+      grid.appendChild(div);
+    });
+  });
+</script>
+</body>
+</html>
