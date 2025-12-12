@@ -29,6 +29,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script>
+  // ✅ YOUR API KEY IS RESTORED HERE
   const firebaseConfig = {
     apiKey: "AIzaSyDsBDuaZ_rl7ro63Fv5gPh37EwSkfh-NqM",
     authDomain: "aiphotostudioapp.firebaseapp.com",
@@ -42,11 +43,7 @@
   const db = firebase.firestore();
 
   auth.onAuthStateChanged(async user => {
-    if (!user) { 
-      // If not logged in, go to the NEW sign in page (with Google button)
-      window.location.href = "signin.html"; 
-      return; 
-    }
+    if (!user) { window.location.href = "signin.html"; return; }
     document.getElementById('uEmail').textContent = user.email;
     const snap = await db.collection('users').doc(user.uid).get();
     if(snap.exists && (snap.data().isPro || snap.data().tier === 'pro')) {
