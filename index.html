@@ -22,7 +22,7 @@
     .brand-img{width:28px;height:28px;border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,.15)}
     .brand-text{font-size:20px;font-weight:800;letter-spacing:.2px}
     .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-    .ghost{background:#eef2ff;color:#4338ca;border:0;padding:8px 12px;border-radius:10px;font-weight:700;text-decoration:none;display:inline-block;cursor:pointer}
+    .ghost{background:#eef2ff;color:#4338ca;border:0;padding:8px 12px;border-radius:10px;font-weight:700;text-decoration:none;display:inline-block;cursor:pointer;font-size:14px}
     .muted{color:#6b7280;font-size:13px}
     
     /* Pricing Buttons */
@@ -57,10 +57,15 @@
     </div>
 
     <div class="row">
-      <a href="Gallery.html" class="ghost">Gallery</a>
-      <a href="signin.html" class="ghost">Sign In</a>
-      <span id="authStatus" class="muted">Not signed in</span>
-      <button id="btnLogout" class="ghost" style="display:none">Sign out</button>
+      <a href="gallery.html" class="ghost">Gallery</a>
+      <a href="account.html" class="ghost">Account</a>
+      <a href="settings.html" class="ghost">Settings</a>
+      
+      <a href="signin.html" class="ghost" id="navSignIn">Sign In</a>
+      <a href="signup.html" class="ghost" id="navSignUp">Sign Up</a>
+      
+      <span id="authStatus" class="muted" style="display:none"></span>
+      <button id="btnLogout" class="ghost" style="display:none; background:#fee2e2; color:#991b1b;">Sign out</button>
     </div>
 
     <div class="pricing-row">
@@ -162,6 +167,11 @@
     const elStatus    = document.getElementById('authStatus');
     const btnLogout   = document.getElementById('btnLogout');
     const elTrialLeft = document.getElementById('trialLeft');
+    
+    // Auth Nav Buttons
+    const navSignIn   = document.getElementById('navSignIn');
+    const navSignUp   = document.getElementById('navSignUp');
+
     let proEnabled    = false;
 
     const $status = document.getElementById('status');
@@ -374,12 +384,26 @@
     auth.onAuthStateChanged(async user => {
       if (user) {
         const who = user.phoneNumber || user.email || (user.isAnonymous ? 'Guest mode' : 'Signed in');
+        
+        // Update UI for Logged In User
+        elStatus.style.display = 'inline-block';
         elStatus.textContent = `Signed in as ${who}`;
         btnLogout.style.display = 'inline-block';
+        
+        // Hide Sign In/Up buttons
+        if(navSignIn) navSignIn.style.display = 'none';
+        if(navSignUp) navSignUp.style.display = 'none';
+
         await refreshUserPlan();
       } else {
-        elStatus.textContent = 'Not signed in';
+        // Update UI for Logged Out User
+        elStatus.style.display = 'none';
         btnLogout.style.display = 'none';
+        
+        // Show Sign In/Up buttons
+        if(navSignIn) navSignIn.style.display = 'inline-block';
+        if(navSignUp) navSignUp.style.display = 'inline-block';
+
         elTrialLeft.style.display = 'none';
         setPro(false);
       }
@@ -388,7 +412,7 @@
     if(btnLogout) btnLogout.onclick = () => auth.signOut();
 
     // =========================================
-    // 6. GALLERY & STORAGE (Your Added Code)
+    // 6. GALLERY & STORAGE
     // =========================================
     async function saveToGalleryIfSignedIn(blob, type){
       const user = auth.currentUser;
