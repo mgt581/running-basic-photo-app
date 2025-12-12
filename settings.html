@@ -3,15 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Settings - AI Photo Studio</title>
+  <title>Settings</title>
   <style>
-    body{font-family:system-ui,sans-serif;background:#f9fafb;display:flex;justify-content:center;padding-top:50px;margin:0}
+    body{font-family:system-ui,-apple-system,sans-serif;background:#f9fafb;display:flex;justify-content:center;padding-top:50px;margin:0}
     .card{background:white;padding:2rem;border-radius:12px;box-shadow:0 4px 6px rgba(0,0,0,0.1);width:100%;max-width:400px}
-    h1{margin-top:0;font-size:22px}
+    h1{margin-top:0;font-size:22px;margin-bottom:20px}
     .row{padding:15px 0;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center}
     .btn{padding:8px 12px;border-radius:6px;text-decoration:none;font-weight:700;font-size:14px;background:#e5e7eb;color:#374151;border:none;cursor:pointer}
     .btn-red{background:#fee2e2;color:#991b1b}
-    .btn-blue{background:#4f46e5;color:white;display:block;text-align:center;margin-top:20px;width:100%;box-sizing:border-box;padding:12px}
+    .btn-blue{background:#4f46e5;color:white;display:block;text-align:center;margin-top:20px;width:100%;padding:12px;box-sizing:border-box}
+    .toggle { position: relative; display: inline-block; width: 40px; height: 24px; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+    .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+    input:checked + .slider { background-color: #4f46e5; }
+    input:checked + .slider:before { transform: translateX(16px); }
   </style>
 </head>
 <body>
@@ -21,21 +27,68 @@
   
   <div class="row">
     <span>Manage Subscription</span>
-    <button class="btn" onclick="alert('Manage subscription via Stripe portal (coming soon)')">Manage</button>
+    <button class="btn" onclick="alert('To manage your subscription, please check your email for the Stripe customer portal link sent after purchase.')">Stripe Portal</button>
   </div>
   
   <div class="row">
     <span>Notifications</span>
-    <button class="btn">On</button>
+    <label class="toggle">
+      <input type="checkbox" id="notifToggle">
+      <span class="slider"></span>
+    </label>
   </div>
   
   <div class="row">
     <span>Delete Account</span>
-    <button class="btn btn-red" onclick="alert('Please contact support to delete your account.')">Delete</button>
+    <button class="btn btn-red" id="btnDelete">Delete</button>
   </div>
 
   <a href="index.html" class="btn-blue">Back to Home</a>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script>
+  // ✅ YOUR API KEY IS RESTORED HERE
+  const firebaseConfig = {
+    apiKey: "AIzaSyDsBDuaZ_rl7ro63Fv5gPh37EwSkfh-NqM",
+    authDomain: "aiphotostudioapp.firebaseapp.com",
+    projectId: "aiphotostudioapp",
+    storageBucket: "aiphotostudioapp.appspot.com",
+    messagingSenderId: "1056724519182",
+    appId: "1:1056724519182:web:93410e1b71a292e531ef5f"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+
+  // Load Saved Settings
+  const toggle = document.getElementById('notifToggle');
+  const savedState = localStorage.getItem('notifications');
+  toggle.checked = savedState === 'true';
+
+  // Save Settings on Click
+  toggle.addEventListener('change', (e) => {
+    localStorage.setItem('notifications', e.target.checked);
+  });
+
+  // Delete Account Logic
+  document.getElementById('btnDelete').onclick = () => {
+    const user = auth.currentUser;
+    if(!user) return alert("Please sign in first.");
+    
+    if(confirm("Are you sure you want to delete your account? This cannot be undone.")) {
+      user.delete().then(() => {
+        alert("Account deleted.");
+        window.location.href = "index.html";
+      }).catch((error) => {
+        if(error.code === 'auth/requires-recent-login') {
+            alert("For security, please Sign Out and Sign In again, then try deleting your account.");
+        } else {
+            alert("Error: " + error.message);
+        }
+      });
+    }
+  };
+</script>
 </body>
 </html>
