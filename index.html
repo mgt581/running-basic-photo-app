@@ -6,70 +6,72 @@
   <title>AI Photo Studio</title>
   <meta name="theme-color" content="#4f46e5">
 
-  <!-- PWA / Icons -->
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=3">
-  <link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png?v=3">
   <link rel="icon" type="image/png" href="/apple-touch-icon.png?v=3">
-  <meta name="apple-mobile-web-app-title" content="AI Photo Studio">
 
-  <!-- iOS PWA niceties -->
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
-  <!-- FREE, on-device background removal -->
   <script src="https://cdn.jsdelivr.net/npm/@imgly/background-removal@latest/dist/background-removal.min.js"></script>
 
   <style>
     :root{--grad:linear-gradient(90deg,#6366f1,#8b5cf6)}
     body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;background:#f9fafb;color:#111827}
+    
+    /* Header & Nav */
     header{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center;padding:16px 24px;border-bottom:1px solid #e5e7eb;background:#fff}
     .brand{display:flex;align-items:center;gap:10px}
     .brand-img{width:28px;height:28px;border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,.15)}
     .brand-text{font-size:20px;font-weight:800;letter-spacing:.2px}
     .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-    .pill{background:var(--grad);color:#fff;border:0;padding:8px 16px;border-radius:9999px;cursor:pointer;font-size:14px;font-weight:700}
     .ghost{background:#eef2ff;color:#4338ca;border:0;padding:8px 12px;border-radius:10px;font-weight:700;text-decoration:none;display:inline-block;cursor:pointer}
     .muted{color:#6b7280;font-size:13px}
+    
+    /* Pricing Buttons */
+    .pricing-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .btn-price { padding: 8px 12px; border-radius: 99px; border: none; cursor: pointer; font-size: 13px; font-weight: 700; color: white; transition: transform 0.1s; }
+    .btn-price:active { transform: scale(0.97); }
+    
+    /* Layout */
     .wrap{max-width:900px;margin:0 auto;padding:24px;display:grid;gap:16px}
     .card{background:#fff;padding:20px;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 2px 6px rgba(0,0,0,.05)}
     .btn{height:44px;padding:0 16px;border-radius:10px;border:0;cursor:pointer;font-size:15px;font-weight:700;background:#e5e7eb;color:#111827}
     .btn.primary{background:var(--grad);color:#fff}
     .btn.warn{background:#fee2e2;color:#991b1b}
     .btn:disabled{opacity:.65;cursor:not-allowed}
-    .btn.primary:disabled{background:#e5e7eb;color:#111827}
-    .status{text-align:center;color:#6b7280;font-size:14px}
+    
+    /* Canvas */
     .stage{border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;position:relative}
     canvas#stage{width:100%;height:auto;display:block;background:#f3f4f6}
     canvas#mask{position:absolute;left:0;top:0;width:100%;height:100%;display:none;cursor:crosshair}
+    
     .actions{display:grid;gap:12px}
     .hint{font-size:13px;color:#6b7280;text-align:center}
     .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:16px;background:#111827;color:#fff;padding:10px 14px;border-radius:10px;font-weight:700;box-shadow:0 6px 18px rgba(0,0,0,.25);z-index:9999}
     .toolbar{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
-    .badge{background:#eef2ff;color:#4338ca;border-radius:9999px;padding:6px 10px;font-weight:700;font-size:12px}
   </style>
 </head>
 <body>
   <header>
     <div class="brand">
-      <img src="/apple-touch-icon.png?v=3" alt="AI Photo Studio logo" width="28" height="28" class="brand-img" onerror="this.remove()">
+      <img src="/apple-touch-icon.png?v=3" alt="Logo" width="28" height="28" class="brand-img" onerror="this.remove()">
       <span class="brand-text">AI Photo Studio</span>
     </div>
 
     <div class="row">
       <a href="Gallery.html" class="ghost">Gallery</a>
-      <a href="Profile.html" class="ghost">Account</a>
       <a href="signin.html" class="ghost">Sign In</a>
-      <a href="signup.html" class="ghost">Sign Up</a>
-
       <span id="authStatus" class="muted">Not signed in</span>
       <button id="btnLogout" class="ghost" style="display:none">Sign out</button>
     </div>
 
-    <span id="trialLeft" class="badge" style="display:none"></span>
-    <button class="pill" id="btnTrial">Start 7-day Free Trial</button>
-    <button class="pill" id="btnBuy">Buy Pro · £4.99/yr</button>
+    <div class="pricing-row">
+       <button id="btnDaily" class="btn-price" style="background: #6b7280;">Day Pass £1</button>
+       <button id="btnMonthly" class="btn-price" style="background: #2563eb;">Monthly £4.99</button>
+       <button id="btnYearly" class="btn-price" style="background: #16a34a;">Free Trial (Yearly)</button>
+    </div>
+    <span id="trialLeft" class="badge" style="display:none; margin-left: 10px; font-weight:bold; color:#4338ca;"></span>
+    
+    <button id="btnTrial" style="display:none;"></button>
+    <button id="btnBuy" style="display:none;"></button>
   </header>
     
   <div class="wrap" ondragover="event.preventDefault()" ondrop="Studio.handleDrop(event)">
@@ -80,16 +82,15 @@
           <button class="btn primary" onclick="document.getElementById('mainInput').click()">Choose Photo</button>
           <input id="mainInput" type="file" accept="image/*" style="display:none" onchange="Studio.onUploadMain(this.files[0]); this.value=''" />
           <input id="bgInput" type="file" accept="image/*" style="display:none" onchange="Studio.onUploadBg(this.files[0]); this.value=''" />
+          
           <button id="btnRemove" class="btn" disabled onclick="Studio.removeBg()">Remove Background</button>
           <button id="btnChange" class="btn" disabled onclick="Studio.changeBg()">Change Background</button>
           <button class="btn" onclick="document.getElementById('bgInput').click()">Choose Background</button>
 
-          <!-- Remove Person -->
           <button id="btnBrush" class="btn" disabled onclick="Studio.startBrush()">Remove Person (Brush)</button>
           <button id="btnApply" class="btn warn" style="display:none" onclick="Studio.applyInpaint()">Apply Removal</button>
           <button id="btnCancel" class="btn" style="display:none" onclick="Studio.cancelBrush()">Cancel</button>
         </div>
-        <p class="hint">Drag & drop also works!</p>
       </div>
     </div>
 
@@ -108,7 +109,6 @@
     </div>
   </div>
 
-  <!-- Firebase (Compat) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -116,10 +116,9 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-functions-compat.js"></script>
 
   <script>
-    // STRIPE: keep your existing payment link
-    const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/eVq6oJ3wugiPcFJ7QGd3i02";
-
-    // ✅ CORRECT FIREBASE PROJECT: aiphotostudioapp
+    // =========================================
+    // 1. FIREBASE CONFIG
+    // =========================================
     const firebaseConfig = {
       apiKey: "AIzaSyDsBDuaZ_rl7ro63Fv5gPh37EwSkfh-NqM",
       authDomain: "aiphotostudioapp.firebaseapp.com",
@@ -131,18 +130,39 @@
     };
     firebase.initializeApp(firebaseConfig);
 
-    const auth = firebase.auth();
-    const db   = firebase.firestore();
-    const storage = firebase.storage();
+    const auth      = firebase.auth();
+    const db        = firebase.firestore();
+    const storage   = firebase.storage();
     const functions = firebase.functions ? firebase.functions() : null;
 
-    const elStatus   = document.getElementById('authStatus');
-    const btnLogout  = document.getElementById('btnLogout');
-    const btnTrial   = document.getElementById('btnTrial');
-    const btnBuy     = document.getElementById('btnBuy');
-    const elTrialLeft= document.getElementById('trialLeft');
+    // =========================================
+    // 2. PAYMENT LOGIC
+    // =========================================
+    const STRIPE_DAILY   = "https://buy.stripe.com/fZubJ30ki5EbdJNfj8d3i0a";
+    const STRIPE_MONTHLY = "https://buy.stripe.com/cNi8wRaYW9UraxB2wmd3i09";
+    const STRIPE_YEARLY  = "https://buy.stripe.com/4gM00l8QOfeL7lp9YOd3i08";
 
-    let proEnabled = false;
+    const btnDaily   = document.getElementById("btnDaily");
+    const btnMonthly = document.getElementById("btnMonthly");
+    const btnYearly  = document.getElementById("btnYearly");
+
+    if (btnDaily)   btnDaily.onclick   = () => window.location.href = STRIPE_DAILY;
+    if (btnMonthly) btnMonthly.onclick = () => window.location.href = STRIPE_MONTHLY;
+    if (btnYearly)  btnYearly.onclick  = () => window.location.href = STRIPE_YEARLY;
+
+    // Legacy buttons support
+    const btnTrial = document.getElementById('btnTrial');
+    const btnBuy   = document.getElementById('btnBuy');
+    if (btnTrial) btnTrial.onclick = () => window.location.href = STRIPE_YEARLY;
+    if (btnBuy)   btnBuy.onclick   = () => window.location.href = STRIPE_MONTHLY;
+
+    // =========================================
+    // 3. APP VARIABLES & DOM
+    // =========================================
+    const elStatus    = document.getElementById('authStatus');
+    const btnLogout   = document.getElementById('btnLogout');
+    const elTrialLeft = document.getElementById('trialLeft');
+    let proEnabled    = false;
 
     const $status = document.getElementById('status');
     const stage   = document.getElementById('stage');
@@ -163,6 +183,9 @@
     const btnApply  = document.getElementById('btnApply');
     const btnCancel = document.getElementById('btnCancel');
 
+    // =========================================
+    // 4. HELPER FUNCTIONS
+    // =========================================
     function toast(msg){ 
       const el=document.createElement('div'); 
       el.className='toast'; 
@@ -170,7 +193,9 @@
       document.body.appendChild(el); 
       setTimeout(()=>el.remove(),2200); 
     }
+    
     function setStatus(t){ $status.textContent = t; }
+
     function drawChecker(){ 
       const s=20; 
       for(let y=0;y<stage.height;y+=s){ 
@@ -206,6 +231,7 @@
       r.onerror=rej; 
       r.readAsDataURL(f); 
     });
+    
     const loadImage = (src)=>new Promise((res,rej)=>{ 
       const im=new Image(); 
       im.onload=()=>res(im); 
@@ -213,6 +239,7 @@
       im.src=src; 
     });
 
+    // MediaPipe Loader
     let selfieLoader = null;
     function ensureSelfieSegmentation(){
       if (window.SelfieSegmentation) return Promise.resolve();
@@ -226,6 +253,7 @@
       });
       return selfieLoader;
     }
+    
     async function maskWithSelfie(img){
       await ensureSelfieSegmentation();
       const ss = new SelfieSegmentation({ locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${f}` });
@@ -244,6 +272,9 @@
       return mc;
     }
 
+    // =========================================
+    // 5. AUTH & STATE
+    // =========================================
     function updatePlanUI(){
       if (proEnabled){
         hdBtnPng.textContent = "Download HD (PNG)";
@@ -255,31 +286,12 @@
         hdBtnPng.disabled = hdBtnJpg.disabled = true;
       }
     }
+
     function setPro(on){
       proEnabled = !!on;
       updatePlanUI();
       if (on) toast("✅ Pro features available");
     }
-
-    auth.onAuthStateChanged(async user => {
-      if (user) {
-        const who = user.phoneNumber || user.email || (user.isAnonymous ? 'Guest mode' : 'Signed in');
-        elStatus.textContent = `Signed in as ${who}`;
-        btnLogout.style.display = 'inline-block';
-        await refreshUserPlan();
-      } else {
-        elStatus.textContent = 'Not signed in';
-        btnLogout.style.display = 'none';
-        elTrialLeft.style.display = 'none';
-        setPro(false);
-      }
-    });
-
-    btnLogout.onclick = () => auth.signOut();
-    btnBuy.onclick   = () => { 
-      if (!STRIPE_PAYMENT_LINK) return alert("Stripe link missing."); 
-      location.href = STRIPE_PAYMENT_LINK; 
-    };
 
     async function refreshUserPlan(){
       const user = auth.currentUser;
@@ -358,12 +370,29 @@
       toast("✅ 7-day free trial started");
       await refreshUserPlan();
     }
-    btnTrial.onclick = startFreeTrial;
 
-    // ---------- SAVE TO GALLERY (Storage + Firestore) ----------
+    auth.onAuthStateChanged(async user => {
+      if (user) {
+        const who = user.phoneNumber || user.email || (user.isAnonymous ? 'Guest mode' : 'Signed in');
+        elStatus.textContent = `Signed in as ${who}`;
+        btnLogout.style.display = 'inline-block';
+        await refreshUserPlan();
+      } else {
+        elStatus.textContent = 'Not signed in';
+        btnLogout.style.display = 'none';
+        elTrialLeft.style.display = 'none';
+        setPro(false);
+      }
+    });
+
+    if(btnLogout) btnLogout.onclick = () => auth.signOut();
+
+    // =========================================
+    // 6. GALLERY & STORAGE (Your Added Code)
+    // =========================================
     async function saveToGalleryIfSignedIn(blob, type){
       const user = auth.currentUser;
-      if (!user) return; // only save for signed-in users
+      if (!user) return; 
 
       try {
         const ext  = (type === "jpeg" ? "jpg" : "png");
@@ -385,7 +414,9 @@
       }
     }
 
-    // ---- Progress HUD (for HD+ model download/inference) ----
+    // =========================================
+    // 7. PROGRESS HUD
+    // =========================================
     let _progEl = null;
     function showProgress(text, pct = 0) {
       if (!_progEl) {
@@ -407,7 +438,9 @@
     function updateProgress(text, pct){ if (_progEl) showProgress(text, pct); }
     function hideProgress(){ if (_progEl){ _progEl.remove(); _progEl = null; } }
 
-    // ----- App core -----
+    // =========================================
+    // 8. APP CORE (Studio Logic)
+    // =========================================
     const Studio = (() => {
       let mainSrc = null, cutoutURL = null, bgSrc = null, busy = false;
 
@@ -1028,7 +1061,8 @@
       });
     }
 
-    btnTrial.onclick = startFreeTrial;
+    // Connect Trial Button
+    if(btnTrial) btnTrial.onclick = startFreeTrial;
   </script>
 </body>
 </html>
