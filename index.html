@@ -122,41 +122,48 @@
 
 <!-- FIREBASE CONFIG -->
 <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyDsBDuaZ_rl7ro63Fv5gPh37EwSkfh-NqM",
-      authDomain: "aiphotostudioapp.firebaseapp.com",
-      projectId: "aiphotostudioapp",
-      storageBucket: "aiphotostudioapp.appspot.com",
-      messagingSenderId: "1056724519182",
-      appId: "1:1056724519182:web:93410e1b71a292e531ef5f",
-      measurementId: "G-YMB9JJHNBE"
-    };
+  const firebaseConfig = {
+    apiKey: "AIzaSyDsBDuaZ_rl7ro63Fv5gPh37EwSkfh-NqM",
+    authDomain: "aiphotostudioapp.firebaseapp.com",
+    projectId: "aiphotostudioapp",
+    storageBucket: "aiphotostudioapp.appspot.com",
+    messagingSenderId: "1056724519182",
+    appId: "1:1056724519182:web:93410e1b71a292e531ef5f",
+    measurementId: "G-YMB9JJHNBE"
+  };
 
-    // Initialize Firebase properly
-    firebase.initializeApp(firebaseConfig);
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+
+  // 🔥 EVERYTHING BELOW MUST BE INSIDE THIS SAME SCRIPT
+
+  const auth      = firebase.auth();
+  const db        = firebase.firestore();
+  const storage   = firebase.storage();
+  const functions = firebase.functions ? firebase.functions() : null;
+
+  const elStatus    = document.getElementById('authStatus');
+  const btnLogout   = document.getElementById('btnLogout');
+  const btnTrial    = document.getElementById('btnTrial');
+  const btnBuy      = document.getElementById('btnBuy');
+  const elTrialLeft = document.getElementById('trialLeft');
+  let proEnabled    = false;
+
+  // ENABLE STRIPE BUTTONS
+  btnBuy.onclick = () => {
+      if (!STRIPE_PAYMENT_LINK) return alert("Stripe link missing");
+      window.location.href = STRIPE_PAYMENT_LINK;
+  };
+
+  btnTrial.onclick = () => {
+      window.location.href = STRIPE_PAYMENT_LINK;
+  };
+
+  // …keep the rest of your existing JS here…
+  // refreshUserPlan(), startFreeTrial(), saveToGallery(), etc.
 </script> 
   
-  auth = firebase.auth();
-    const db   = firebase.firestore();
-    const storage = firebase.storage();
-    const functions = firebase.functions ? firebase.functions() : null;
-
-    const elStatus   = document.getElementById('authStatus');
-    const btnLogout  = document.getElementById('btnLogout');
-    const btnTrial   = document.getElementById('btnTrial');
-    const btnBuy     = document.getElementById('btnBuy');
-    const elTrialLeft= document.getElementById('trialLeft');
-    let proEnabled = false;
-  
-  // ENABLE STRIPE BUTTONS
-btnBuy.onclick = () => {
-    window.location.href = STRIPE_PAYMENT_LINK;
-};
-
-btnTrial.onclick = () => {
-    window.location.href = STRIPE_PAYMENT_LINK;
-};
-    const $status = document.getElementById('status');
+  const $status = document.getElementById('status');
     const stage   = document.getElementById('stage');
     const ctx     = stage.getContext('2d', { willReadFrequently: true });
     ctx.imageSmoothingEnabled = true; 
