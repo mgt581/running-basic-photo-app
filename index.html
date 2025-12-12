@@ -115,12 +115,16 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-functions-compat.js"></script>
 
-<!-- STRIPE PAYMENT LINK -->
+<!-- STRIPE PAYMENT LINKS -->
 <script>
-    const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/5kQbJ3eb84A7dJNc6Wd3i04";
+  const STRIPE_LINKS = {
+    day:   "https://buy.stripe.com/fZubJ30ki5EbdJNfj8d3i0a", // £1 / 1 day
+    month: "https://buy.stripe.com/cNi8wRaYW9UraxB2wmd3i09", // £4.99 / month
+    year:  "https://buy.stripe.com/4gM00l8QOfeL7lp9YOd3i08"  // £24.99 / year (7-day trial)
+  };
 </script>
-
-<!-- FIREBASE CONFIG -->
+  
+  <!-- FIREBASE CONFIG -->
 <script>
   const firebaseConfig = {
     apiKey: "AIzaSyDsBDuaZ_rl7ro63Fv5gPh37EwSkfh-NqM",
@@ -149,18 +153,14 @@
   const elTrialLeft = document.getElementById('trialLeft');
   let proEnabled    = false;
 
-  // ENABLE STRIPE BUTTONS
-  btnBuy.onclick = () => {
-      if (!STRIPE_PAYMENT_LINK) return alert("Stripe link missing");
-      window.location.href = STRIPE_PAYMENT_LINK;
-  };
+  // ENABLE STRIPE BUTTONS (FINAL)
+btnBuy.onclick = () => {
+  window.location.href = STRIPE_LINKS.year;
+};
 
-  btnTrial.onclick = () => {
-      window.location.href = STRIPE_PAYMENT_LINK;
-  };
-
-  // …keep the rest of your existing JS here…
-  // refreshUserPlan(), startFreeTrial(), saveToGallery(), etc.
+btnTrial.onclick = () => {
+  window.location.href = STRIPE_LINKS.year;
+};  // refreshUserPlan(), startFreeTrial(), saveToGallery(), etc.
 </script> 
   
   const $status = document.getElementById('status');
