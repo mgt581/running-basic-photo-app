@@ -115,12 +115,14 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-functions-compat.js"></script>
 
-  <script>
-    // STRIPE: keep your existing payment link
+<!-- STRIPE PAYMENT LINK -->
+<script>
     const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/5kQbJ3eb84A7dJNc6Wd3i04";
+</script>
 
-    // ✅ CORRECT FIREBASE PROJECT: aiphotostudioapp
-</script>    const firebaseConfig = {
+<!-- FIREBASE CONFIG -->
+<script>
+    const firebaseConfig = {
       apiKey: "AIzaSyDsBDuaZ_rl7ro63Fv5gPh37EwSkfh-NqM",
       authDomain: "aiphotostudioapp.firebaseapp.com",
       projectId: "aiphotostudioapp",
@@ -129,9 +131,12 @@
       appId: "1:1056724519182:web:93410e1b71a292e531ef5f",
       measurementId: "G-YMB9JJHNBE"
     };
-    firebase.initializeApp(firebaseConfig);
 
-    const auth = firebase.auth();
+    // Initialize Firebase properly
+    firebase.initializeApp(firebaseConfig);
+</script> 
+  
+  auth = firebase.auth();
     const db   = firebase.firestore();
     const storage = firebase.storage();
     const functions = firebase.functions ? firebase.functions() : null;
