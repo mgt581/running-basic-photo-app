@@ -9,10 +9,9 @@
     body { margin:0; font-family:system-ui; background:#f9fafb; padding:20px; }
     h2 { margin-bottom:20px; }
     
-    /* NEW RED HOME BUTTON STYLE */
     .home-btn {
       display: inline-block;
-      background-color: #ff0000; /* Bright Red for visibility */
+      background-color: #ff0000;
       color: white;
       padding: 10px 20px;
       text-decoration: none;
@@ -32,7 +31,10 @@
       padding:10px;
       box-shadow:0 2px 8px rgba(0,0,0,0.07);
       text-align:center;
+      animation: popIn 0.3s ease-out;
     }
+    @keyframes popIn { from { opacity:0; transform:scale(0.9); } to { opacity:1; transform:scale(1); } }
+
     img {
       width:100%; border-radius:8px; object-fit:cover;
     }
@@ -68,37 +70,49 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    auth.onAuthStateChanged(async user => {
+    auth.onAuthStateChanged(user => {
       if (!user) {
-         document.getElementById("status").textContent = "Not signed in (Local Test)";
+         document.getElementById("status").textContent = "Please sign in to view gallery.";
          return;
       }
-      loadGallery(user.uid);
+      listenToGallery(user.uid);
     });
 
-    async function loadGallery(uid) {
+    function listenToGallery(uid) {
       const galleryDiv = document.getElementById("gallery");
       const status = document.getElementById("status");
 
-      const snap = await db.collection("users").doc(uid).collection("gallery").orderBy("createdAt", "desc").get();
+      // Real-time listener (onSnapshot)
+      db.collection("users")
+        .doc(uid)
+        .collection("gallery")
+        .orderBy("createdAt", "desc")
+        .onSnapshot(snap => {
+          if (snap.empty) {
+            status.textContent = "No saved images yet.";
+            galleryDiv.innerHTML = "";
+            return;
+          }
 
-      if (snap.empty) {
-        status.textContent = "No saved images yet.";
-        return;
-      }
+          status.textContent = "";
+          galleryDiv.innerHTML = ""; // Clear and rebuild to ensure order
 
-      status.textContent = "";
-
-      snap.forEach(doc => {
-        const data = doc.data();
-        if (!data.url) return;
-        const card = document.createElement("div");
-        card.className = "card";
-        const img = document.createElement("img");
-        img.src = data.url;
-        card.appendChild(img);
-        galleryDiv.appendChild(card);
-      });
+          snap.forEach(doc => {
+            const data = doc.data();
+            if (!data.url) return;
+            
+            const card = document.createElement("div");
+            card.className = "card";
+            const img = document.createElement("img");
+            img.src = data.url;
+            
+            card.appendChild(img);
+            galleryDiv.appendChild(card);
+          });
+        }, error => {
+          console.error("Gallery error:", error);
+          status.textContent = "Error loading images (Check Permissions).";
+        });
     }
   </script>
 
