@@ -84,7 +84,7 @@
     <div class="pricing-row">
        <button id="btnDaily" class="btn-price" style="background: #6b7280;">Day Pass £1</button>
        <button id="btnMonthly" class="btn-price" style="background: #2563eb;">Monthly £4.99</button>
-       <button id="btnTrialStart" class="btn-price" style="background: #16a34a;">Start Free Trial (7 Days)</button>
+       <button id="btnTrialStart" class="btn-price" style="background: #16a34a;">Start Free Trial (Yearly)</button>
     </div>
     <span id="trialLeft" class="badge" style="display:none; margin-left: 10px; font-weight:bold; color:#4338ca;"></span>
   </header>
@@ -151,10 +151,10 @@
     const storage   = firebase.storage();
     const functions = firebase.functions ? firebase.functions() : null;
 
-    // 2. PAYMENT & TRIAL LOGIC
-    // STRIPE LINKS RESTORED
+    // 2. PAYMENT LINKS
     const STRIPE_DAILY   = "https://buy.stripe.com/fZubJ30ki5EbdJNfj8d3i0a";
     const STRIPE_MONTHLY = "https://buy.stripe.com/cNi8wRaYW9UraxB2wmd3i09";
+    const STRIPE_YEARLY  = "https://buy.stripe.com/4gM00l8QOfeL7lp9YOd3i08"; // New trial link
     
     const btnDaily      = document.getElementById("btnDaily");
     const btnMonthly    = document.getElementById("btnMonthly");
@@ -162,16 +162,14 @@
 
     if (btnDaily)   btnDaily.onclick   = () => window.location.href = STRIPE_DAILY;
     if (btnMonthly) btnMonthly.onclick = () => window.location.href = STRIPE_MONTHLY;
-    
-    // Trial button remains internal for instant access
-    if (btnTrialStart) btnTrialStart.onclick = () => startFreeTrial();
+    // UPDATED: Now points to the yearly Stripe link as requested
+    if (btnTrialStart) btnTrialStart.onclick = () => window.location.href = STRIPE_YEARLY;
 
     // --- CHECK FOR PAYMENT RETURN (Simulates Backend) ---
     // User must set Stripe redirect to: https://aiphotostudio.co.uk/?paid=true
     window.onload = function() {
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.get('paid') === 'true') {
-        // Just returned from Stripe with success flag
         auth.onAuthStateChanged(user => {
           if (user) {
             activatePro('Paid Plan (Stripe)');
@@ -316,6 +314,7 @@
         hdBtnPng.textContent = "Download HD (PNG)";
         hdBtnJpg.textContent = "Download HD (JPEG)";
         hdBtnPng.disabled = hdBtnJpg.disabled = false;
+        // Force redraw to remove watermark immediately
         if (typeof Studio !== 'undefined' && Studio.redraw) Studio.redraw();
       } else {
         hdBtnPng.textContent = "Download HD (PNG) · Pro required";
@@ -382,36 +381,11 @@
       }
     }
 
+    // (Kept for reference, but button now uses direct Stripe link)
     async function startFreeTrial(){
       const user = auth.currentUser;
       if (!user){ return alert("Please sign in to start a trial."); }
-      if (user.isAnonymous){ return alert("Please create an account to start a trial."); }
-      
-      const ref = db.collection('users').doc(user.uid);
-      const now  = new Date();
-      const end  = new Date(now.getTime() + 7*24*60*60*1000); 
-      
-      const snap = await ref.get();
-      if (snap.exists){
-        const d = snap.data() || {};
-        const activeEnds = d.trial?.endsAt?.toMillis?.() || d.trialEnd?.toMillis?.();
-        if (activeEnds && activeEnds > Date.now()){
-          return alert("You already have an active trial!");
-        }
-      }
-      
-      // WRITE TO DB
-      await ref.set({
-        tier: "trial",
-        trial: {
-          startsAt: firebase.firestore.Timestamp.fromDate(now),
-          endsAt:   firebase.firestore.Timestamp.fromDate(end)
-        },
-        isPro: false
-      }, { merge: true });
-      
-      toast("✅ 7-day free trial started!");
-      await refreshUserPlan();
+      // This function is currently bypassed by the direct Stripe link
     }
 
     auth.onAuthStateChanged(async user => {
