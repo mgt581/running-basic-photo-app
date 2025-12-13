@@ -3,11 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Settings</title>
+  <title>Settings & Account</title>
   <style>
     body{font-family:system-ui,-apple-system,sans-serif;background:#f9fafb;display:flex;justify-content:center;padding-top:50px;margin:0}
     .card{background:white;padding:2rem;border-radius:12px;box-shadow:0 4px 6px rgba(0,0,0,0.1);width:100%;max-width:400px}
     h1{margin-top:0;font-size:22px;margin-bottom:20px}
+    .profile-info { background: #f3f4f6; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+    .label { font-size: 11px; text-transform: uppercase; color: #6b7280; font-weight: 700; letter-spacing: 0.5px; }
+    .val { font-size: 16px; font-weight: 500; color: #111827; margin-bottom: 10px; }
     .row{padding:15px 0;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center}
     .btn{padding:8px 12px;border-radius:6px;text-decoration:none;font-weight:700;font-size:14px;background:#e5e7eb;color:#374151;border:none;cursor:pointer}
     .btn-red{background:#fee2e2;color:#991b1b}
@@ -23,8 +26,15 @@
 <body>
 
 <div class="card">
-  <h1>Settings</h1>
+  <h1>Settings & Account</h1>
   
+  <div class="profile-info">
+    <div class="label">Signed in as</div>
+    <div class="val" id="uEmail">Loading...</div>
+    <div class="label">Current Plan</div>
+    <div class="val" id="uPlan">Checking...</div>
+  </div>
+
   <div class="row">
     <span>Manage Subscription</span>
     <button class="btn" onclick="alert('To manage your subscription, please check your email for the Stripe customer portal link sent after purchase.')">Stripe Portal</button>
@@ -39,50 +49,75 @@
   </div>
   
   <div class="row">
-    <span>Delete Account</span>
-    <button class="btn btn-red" id="btnDelete">Delete</button>
+    <span>Sign Out</span>
+    <button class="btn" id="btnSignOut">Sign Out</button>
   </div>
 
-  <a href="index.html" class="btn-blue">Back to Home</a>
+  <div class="row" style="border-bottom:none; margin-top:10px;">
+    <span style="color:#991b1b; font-size:14px;">Danger Zone</span>
+    <button class="btn btn-red" id="btnDelete">Delete Account</button>
+  </div>
+
+  <a href="index.html" class="btn-blue">Back to Studio</a>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script>
-  // ✅ YOUR API KEY IS RESTORED HERE
+  // ✅ NEW KEYS UPDATED HERE
   const firebaseConfig = {
-    apiKey: "AIzaSyDsBDuaZ_rl7ro63Fv5gPh37EwSkfh-NqM",
-    authDomain: "aiphotostudioapp.firebaseapp.com",
-    projectId: "aiphotostudioapp",
-    storageBucket: "aiphotostudioapp.appspot.com",
-    messagingSenderId: "1056724519182",
-    appId: "1:1056724519182:web:93410e1b71a292e531ef5f"
+    apiKey: "AIzaSyCM6r66kW9xkBA5rgVcz4sP57N2v2BMbkg",
+    authDomain: "ai-photo-studio-24354.firebaseapp.com",
+    projectId: "ai-photo-studio-24354",
+    storageBucket: "ai-photo-studio-24354.firebasestorage.app",
+    messagingSenderId: "411346648650",
+    appId: "1:411346648650:web:aefd1b26027ed5e8fab0b3",
+    measurementId: "G-8TXC63YKPD"
   };
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
+  const db = firebase.firestore();
 
-  // Load Saved Settings
+  // Auth Listener
+  auth.onAuthStateChanged(async user => {
+    if (!user) { window.location.href = "signin.html"; return; }
+    
+    document.getElementById('uEmail').textContent = user.email;
+    
+    // Check Plan
+    const snap = await db.collection('users').doc(user.uid).get();
+    if(snap.exists && (snap.data().isPro || snap.data().tier === 'pro')) {
+       document.getElementById('uPlan').textContent = "✅ Pro Active";
+       document.getElementById('uPlan').style.color = "#16a34a";
+    } else {
+       document.getElementById('uPlan').textContent = "Free Tier";
+    }
+  });
+
+  // Settings Logic
   const toggle = document.getElementById('notifToggle');
   const savedState = localStorage.getItem('notifications');
   toggle.checked = savedState === 'true';
 
-  // Save Settings on Click
   toggle.addEventListener('change', (e) => {
     localStorage.setItem('notifications', e.target.checked);
   });
 
-  // Delete Account Logic
+  // Buttons
+  document.getElementById('btnSignOut').onclick = () => {
+    auth.signOut().then(() => window.location.href = "signin.html");
+  };
+
   document.getElementById('btnDelete').onclick = () => {
     const user = auth.currentUser;
-    if(!user) return alert("Please sign in first.");
-    
     if(confirm("Are you sure you want to delete your account? This cannot be undone.")) {
       user.delete().then(() => {
         alert("Account deleted.");
         window.location.href = "index.html";
       }).catch((error) => {
         if(error.code === 'auth/requires-recent-login') {
-            alert("For security, please Sign Out and Sign In again, then try deleting your account.");
+            alert("For security, please Sign Out and Sign In again, then try deleting.");
         } else {
             alert("Error: " + error.message);
         }
