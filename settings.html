@@ -3,69 +3,185 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Settings & Account</title>
+  <title>Settings • AI Photo Studio</title>
   <style>
-    body{font-family:system-ui,-apple-system,sans-serif;background:#f9fafb;display:flex;justify-content:center;padding-top:50px;margin:0}
-    .card{background:white;padding:2rem;border-radius:12px;box-shadow:0 4px 6px rgba(0,0,0,0.1);width:100%;max-width:400px}
-    h1{margin-top:0;font-size:22px;margin-bottom:20px}
-    .profile-info { background: #f3f4f6; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
-    .label { font-size: 11px; text-transform: uppercase; color: #6b7280; font-weight: 700; letter-spacing: 0.5px; }
-    .val { font-size: 16px; font-weight: 500; color: #111827; margin-bottom: 10px; }
-    .row{padding:15px 0;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center}
-    .btn{padding:8px 12px;border-radius:6px;text-decoration:none;font-weight:700;font-size:14px;background:#e5e7eb;color:#374151;border:none;cursor:pointer}
-    .btn-red{background:#fee2e2;color:#991b1b}
-    .btn-blue{background:#4f46e5;color:white;display:block;text-align:center;margin-top:20px;width:100%;padding:12px;box-sizing:border-box}
-    .toggle { position: relative; display: inline-block; width: 40px; height: 24px; }
+    /* Reset & Base */
+    body { margin:0; font-family:system-ui,-apple-system,sans-serif; background:#f9fafb; display:flex; justify-content:center; padding: 20px; min-height: 100vh; }
+    
+    /* Main Card */
+    .card { background:white; width:100%; max-width:480px; border-radius:16px; box-shadow:0 4px 12px rgba(0,0,0,0.06); overflow:hidden; display: flex; flex-direction: column; height: fit-content; margin-top: 20px; }
+    
+    /* Header */
+    .header { padding: 24px 24px 10px 24px; border-bottom: 1px solid #f3f4f6; }
+    h1 { margin:0; font-size:24px; font-weight:800; color:#111827; }
+    .subtitle { font-size:14px; color:#6b7280; margin-top:4px; }
+
+    /* List Items */
+    .settings-list { list-style:none; padding:0; margin:0; }
+    .item { border-bottom:1px solid #f3f4f6; }
+    .item:last-child { border-bottom:none; }
+
+    /* Category Header (Clickable) */
+    .cat-head {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 18px 24px; cursor: pointer; transition: background 0.15s;
+      background: #fff;
+    }
+    .cat-head:hover { background: #f9fafb; }
+    .cat-title { font-weight: 600; font-size: 16px; color: #1f2937; display: flex; align-items: center; gap: 10px; }
+    .cat-icon { font-size: 18px; color: #6b7280; width: 24px; text-align: center; }
+    
+    /* Chevron Icon */
+    .chevron { width: 8px; height: 8px; border-right: 2px solid #9ca3af; border-bottom: 2px solid #9ca3af; transform: rotate(45deg); transition: transform 0.2s; margin-right: 4px; }
+    .active .chevron { transform: rotate(225deg); border-color: #4f46e5; }
+    .active .cat-title { color: #4f46e5; }
+
+    /* Expandable Content */
+    .content { display: none; background: #f9fafb; padding: 0 24px 20px 24px; border-top: 1px solid #f3f4f6; }
+    .active + .content { display: block; }
+
+    /* Content Elements */
+    .info-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #e5e7eb; font-size: 14px; }
+    .info-row:last-child { border-bottom: none; }
+    .info-label { color: #6b7280; font-weight: 500; }
+    .info-val { color: #111827; font-weight: 600; text-align: right; }
+    
+    /* Special Styles for Plans */
+    .plan-badge { background: #dcfce7; color: #166534; padding: 4px 8px; border-radius: 99px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+    .plan-badge.free { background: #f3f4f6; color: #4b5563; }
+
+    /* Buttons */
+    .btn { padding: 10px 16px; border-radius: 8px; border: 0; font-size: 14px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 10px; transition: opacity 0.2s; }
+    .btn:active { opacity: 0.8; }
+    .btn-subtle { background: #e5e7eb; color: #374151; }
+    .btn-primary { background: #4f46e5; color: white; }
+    .btn-danger { background: #fee2e2; color: #991b1b; }
+    .btn-link { background: none; color: #4f46e5; padding: 0; margin: 0; width: auto; text-decoration: underline; font-size: 13px; }
+
+    /* Toggles */
+    .toggle { position: relative; display: inline-block; width: 44px; height: 24px; }
     .toggle input { opacity: 0; width: 0; height: 0; }
-    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
-    .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #d1d5db; transition: .3s; border-radius: 34px; }
+    .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; box-shadow: 0 1px 2px rgba(0,0,0,0.15); }
     input:checked + .slider { background-color: #4f46e5; }
-    input:checked + .slider:before { transform: translateX(16px); }
+    input:checked + .slider:before { transform: translateX(20px); }
+
+    /* Back Button Area */
+    .footer { padding: 24px; text-align: center; background: #f9fafb; border-top: 1px solid #e5e7eb; }
+    .back-link { text-decoration: none; color: #6b7280; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 6px; }
+    .back-link:hover { color: #111827; }
   </style>
 </head>
 <body>
 
 <div class="card">
-  <h1>Settings & Account</h1>
-  
-  <div class="profile-info">
-    <div class="label">Signed in as</div>
-    <div class="val" id="uEmail">Loading...</div>
-    <div class="label">Current Plan</div>
-    <div class="val" id="uPlan">Checking...</div>
+  <div class="header">
+    <h1>Settings</h1>
+    <div class="subtitle">Manage your preferences and account</div>
   </div>
 
-  <div class="row">
-    <span>Manage Subscription</span>
-    <button class="btn" onclick="alert('To manage your subscription, please check your email for the Stripe customer portal link sent after purchase.')">Stripe Portal</button>
-  </div>
-  
-  <div class="row">
-    <span>Notifications</span>
-    <label class="toggle">
-      <input type="checkbox" id="notifToggle">
-      <span class="slider"></span>
-    </label>
-  </div>
-  
-  <div class="row">
-    <span>Sign Out</span>
-    <button class="btn" id="btnSignOut">Sign Out</button>
-  </div>
+  <ul class="settings-list">
+    
+    <li class="item">
+      <div class="cat-head" onclick="toggleSection(this)">
+        <span class="cat-title"><span class="cat-icon">👤</span> Account</span>
+        <div class="chevron"></div>
+      </div>
+      <div class="content">
+        <div class="info-row">
+          <span class="info-label">Email</span>
+          <span class="info-val" id="uEmail">Loading...</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">User ID</span>
+          <span class="info-val" style="font-family:monospace; font-size:12px; color:#9ca3af;" id="uID">...</span>
+        </div>
+        <div style="margin-top:16px;">
+          <button class="btn btn-subtle" onclick="logout()">Sign Out</button>
+          <button class="btn btn-danger" onclick="deleteAccount()" style="margin-top:8px;">Delete Account</button>
+        </div>
+      </div>
+    </li>
 
-  <div class="row" style="border-bottom:none; margin-top:10px;">
-    <span style="color:#991b1b; font-size:14px;">Danger Zone</span>
-    <button class="btn btn-red" id="btnDelete">Delete Account</button>
-  </div>
+    <li class="item">
+      <div class="cat-head" onclick="toggleSection(this)">
+        <span class="cat-title"><span class="cat-icon">💎</span> Subscription</span>
+        <div class="chevron"></div>
+      </div>
+      <div class="content">
+        <div class="info-row">
+          <span class="info-label">Current Plan</span>
+          <span class="info-val" id="uPlanBadge"><span class="plan-badge free">Checking...</span></span>
+        </div>
+        <div class="info-row" id="trialRow" style="display:none;">
+          <span class="info-label">Trial Status</span>
+          <span class="info-val" id="uTrial">...</span>
+        </div>
+        <div style="margin-top:16px; text-align:center;">
+          <p style="font-size:13px; color:#6b7280; margin-bottom:12px; line-height:1.4;">
+            Manage your billing, update payment methods, or cancel anytime securely via Stripe.
+          </p>
+          <button class="btn btn-primary" onclick="manageSub()">Manage Subscription</button>
+        </div>
+      </div>
+    </li>
 
-  <a href="index.html" class="btn-blue">Back to Studio</a>
+    <li class="item">
+      <div class="cat-head" onclick="toggleSection(this)">
+        <span class="cat-title"><span class="cat-icon">🔔</span> Notifications</span>
+        <div class="chevron"></div>
+      </div>
+      <div class="content">
+        <div class="info-row">
+          <span class="info-label">Email Updates</span>
+          <label class="toggle">
+            <input type="checkbox" id="notifEmail">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Browser Alerts</span>
+          <label class="toggle">
+            <input type="checkbox" id="notifBrowser">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <p style="font-size:12px; color:#9ca3af; margin-top:10px;">
+          We only send essential updates regarding your account or critical service changes.
+        </p>
+      </div>
+    </li>
+
+    <li class="item">
+      <div class="cat-head" onclick="toggleSection(this)">
+        <span class="cat-title"><span class="cat-icon">❓</span> Help & Support</span>
+        <div class="chevron"></div>
+      </div>
+      <div class="content">
+        <div style="padding:10px 0;">
+          <p style="font-size:14px; color:#374151; margin-bottom:12px;">Need assistance? We are here to help.</p>
+          <button class="btn btn-subtle" onclick="window.location.href='mailto:support@aiphotostudio.co.uk'">Contact Support</button>
+          <div style="margin-top:16px; font-size:13px; color:#6b7280;">
+            <p>Version: 2.4.0 (Stable)</p>
+            <p><a href="#" class="btn-link">Privacy Policy</a> &bull; <a href="#" class="btn-link">Terms of Service</a></p>
+          </div>
+        </div>
+      </div>
+    </li>
+
+  </ul>
+
+  <div class="footer">
+    <a href="index.html" class="back-link">← Back to Studio</a>
+  </div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
 <script>
-  // ✅ NEW KEYS UPDATED HERE
+  // --- 1. FIREBASE CONFIG ---
   const firebaseConfig = {
     apiKey: "AIzaSyCM6r66kW9xkBA5rgVcz4sP57N2v2BMbkg",
     authDomain: "ai-photo-studio-24354.firebaseapp.com",
@@ -79,51 +195,91 @@
   const auth = firebase.auth();
   const db = firebase.firestore();
 
-  // Auth Listener
+  // --- 2. UI LOGIC (Accordion) ---
+  function toggleSection(header) {
+    // Toggle active class on clicked header
+    header.classList.toggle('active');
+  }
+
+  // --- 3. AUTH & DATA LOADING ---
   auth.onAuthStateChanged(async user => {
     if (!user) { window.location.href = "signin.html"; return; }
-    
+
+    // Fill Basic Info
     document.getElementById('uEmail').textContent = user.email;
-    
-    // Check Plan
+    document.getElementById('uID').textContent = user.uid.substring(0,8) + "..."; // Shorten ID for UI
+
+    // Load Plan Info from Firestore
     const snap = await db.collection('users').doc(user.uid).get();
-    if(snap.exists && (snap.data().isPro || snap.data().tier === 'pro')) {
-       document.getElementById('uPlan').textContent = "✅ Pro Active";
-       document.getElementById('uPlan').style.color = "#16a34a";
+    const badge = document.getElementById('uPlanBadge');
+    
+    if (snap.exists) {
+      const data = snap.data();
+      const isPro = data.isPro || data.tier === 'pro';
+      
+      if (isPro) {
+        badge.innerHTML = '<span class="plan-badge">✅ PRO ACTIVE</span>';
+      } else {
+        badge.innerHTML = '<span class="plan-badge free">Free Plan</span>';
+      }
+
+      // Check Trial (Optional Logic)
+      if (data.trial && data.trial.endsAt) {
+         document.getElementById('trialRow').style.display = 'flex';
+         const end = data.trial.endsAt.toDate();
+         const now = new Date();
+         if (end > now) {
+            const days = Math.ceil((end - now)/(1000*60*60*24));
+            document.getElementById('uTrial').textContent = `${days} Days Left`;
+            document.getElementById('uTrial').style.color = '#16a34a';
+         } else {
+            document.getElementById('uTrial').textContent = "Expired";
+            document.getElementById('uTrial').style.color = '#991b1b';
+         }
+      }
     } else {
-       document.getElementById('uPlan').textContent = "Free Tier";
+      badge.innerHTML = '<span class="plan-badge free">Free Plan</span>';
     }
   });
 
-  // Settings Logic
-  const toggle = document.getElementById('notifToggle');
-  const savedState = localStorage.getItem('notifications');
-  toggle.checked = savedState === 'true';
+  // --- 4. ACTION FUNCTIONS ---
+  
+  function manageSub() {
+    alert("To manage your subscription, please check the email you received from Stripe after your purchase. It contains your personal Customer Portal link.");
+  }
 
-  toggle.addEventListener('change', (e) => {
-    localStorage.setItem('notifications', e.target.checked);
-  });
-
-  // Buttons
-  document.getElementById('btnSignOut').onclick = () => {
+  function logout() {
     auth.signOut().then(() => window.location.href = "signin.html");
-  };
+  }
 
-  document.getElementById('btnDelete').onclick = () => {
+  function deleteAccount() {
     const user = auth.currentUser;
-    if(confirm("Are you sure you want to delete your account? This cannot be undone.")) {
+    if(confirm("⚠️ ARE YOU SURE?\n\nThis will permanently delete your account and all saved data. This action cannot be undone.")) {
       user.delete().then(() => {
-        alert("Account deleted.");
+        alert("Account successfully deleted.");
         window.location.href = "index.html";
       }).catch((error) => {
         if(error.code === 'auth/requires-recent-login') {
-            alert("For security, please Sign Out and Sign In again, then try deleting.");
+            alert("Security Alert: Please Sign Out and Sign In again to verify your identity before deleting your account.");
         } else {
             alert("Error: " + error.message);
         }
       });
     }
-  };
+  }
+
+  // --- 5. NOTIFICATION SETTINGS (Local Storage) ---
+  const nEmail = document.getElementById('notifEmail');
+  const nBrowser = document.getElementById('notifBrowser');
+
+  // Load saved state
+  nEmail.checked = localStorage.getItem('set_notif_email') === 'true';
+  nBrowser.checked = localStorage.getItem('set_notif_browser') === 'true';
+
+  // Save on change
+  nEmail.addEventListener('change', e => localStorage.setItem('set_notif_email', e.target.checked));
+  nBrowser.addEventListener('change', e => localStorage.setItem('set_notif_browser', e.target.checked));
+
 </script>
 </body>
 </html>
