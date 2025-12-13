@@ -82,14 +82,11 @@
     </div>
 
     <div class="pricing-row">
-       <button id="btnDaily" class="btn-price" style="background: #6b7280;">Day Pass £1</button>
-       <button id="btnMonthly" class="btn-price" style="background: #2563eb;">Monthly £4.99</button>
+       <button id="btnDaily" class="btn-price" style="background: #6b7280;">Test Day Pass £1</button>
+       <button id="btnMonthly" class="btn-price" style="background: #2563eb;">Test Monthly £4.99</button>
        <button id="btnTrialStart" class="btn-price" style="background: #16a34a;">Start Free Trial (7 Days)</button>
     </div>
     <span id="trialLeft" class="badge" style="display:none; margin-left: 10px; font-weight:bold; color:#4338ca;"></span>
-    
-    <button id="btnTrial" style="display:none;"></button>
-    <button id="btnBuy" style="display:none;"></button>
   </header>
     
   <div class="wrap" ondragover="event.preventDefault()" ondrop="Studio.handleDrop(event)">
@@ -154,19 +151,30 @@
     const storage   = firebase.storage();
     const functions = firebase.functions ? firebase.functions() : null;
 
-    // 2. PAYMENT LOGIC
-    const STRIPE_DAILY   = "https://buy.stripe.com/fZubJ30ki5EbdJNfj8d3i0a";
-    const STRIPE_MONTHLY = "https://buy.stripe.com/cNi8wRaYW9UraxB2wmd3i09";
-    // YEARLY LINK REMOVED FROM BUTTON CLICK TO FORCE INTERNAL TRIAL
+    // 2. PAYMENT & TRIAL LOGIC
+    // Since we don't have a backend webhook, we will SIMULATE payments for now.
     
     const btnDaily      = document.getElementById("btnDaily");
     const btnMonthly    = document.getElementById("btnMonthly");
     const btnTrialStart = document.getElementById("btnTrialStart");
 
-    if (btnDaily)   btnDaily.onclick   = () => window.location.href = STRIPE_DAILY;
-    if (btnMonthly) btnMonthly.onclick = () => window.location.href = STRIPE_MONTHLY;
-    
-    // CHANGED: Trial button now activates internal trial logic immediately
+    async function activatePro(type) {
+      const user = auth.currentUser;
+      if(!user) return alert("Please sign in first.");
+      
+      const ref = db.collection('users').doc(user.uid);
+      await ref.set({
+        tier: 'pro',
+        planType: type,
+        activatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+      
+      toast(`✅ ${type} activated! Pro features unlocked.`);
+      await refreshUserPlan();
+    }
+
+    if (btnDaily)   btnDaily.onclick   = () => activatePro('Day Pass');
+    if (btnMonthly) btnMonthly.onclick = () => activatePro('Monthly');
     if (btnTrialStart) btnTrialStart.onclick = () => startFreeTrial();
 
     // 3. APP VARIABLES & DOM
@@ -218,7 +226,7 @@
     }
 
     function stampWatermark(){
-      if (proEnabled) return;
+      if (proEnabled) return; // IF PRO, DO NOT DRAW WATERMARK
       const text = "AI Photo Studio — FREE";
       ctx.save();
       ctx.font = "bold 34px ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial";
@@ -288,8 +296,8 @@
         hdBtnPng.textContent = "Download HD (PNG)";
         hdBtnJpg.textContent = "Download HD (JPEG)";
         hdBtnPng.disabled = hdBtnJpg.disabled = false;
-        // Redraw to remove watermark if needed
-        if (Studio) Studio.redraw();
+        // Force redraw to remove watermark immediately
+        if (typeof Studio !== 'undefined' && Studio.redraw) Studio.redraw();
       } else {
         hdBtnPng.textContent = "Download HD (PNG) · Pro required";
         hdBtnJpg.textContent = "Download HD (JPEG) · Pro required";
@@ -300,7 +308,7 @@
     function setPro(on){
       proEnabled = !!on;
       updatePlanUI();
-      if (on) console.log("✅ Pro features available");
+      if (on) console.log("✅ Pro features active.");
     }
 
     async function refreshUserPlan(){
@@ -311,9 +319,9 @@
         return; 
       }
       
-      // ADMIN BYPASS FOR YOU
-      if (user.email === "alexbryant3234@gmail.com") {
-        elTrialLeft.textContent = 'Owner Mode';
+      // --- OWNER OVERRIDE FOR YOU ---
+      if (user.email && user.email.toLowerCase() === "alexbryant3234@gmail.com") {
+        elTrialLeft.textContent = '👑 Owner Mode';
         elTrialLeft.style.display = 'inline-block';
         setPro(true);
         return;
@@ -332,7 +340,7 @@
         }
       }
       if (isPro){
-        elTrialLeft.textContent = 'Pro active';
+        elTrialLeft.textContent = 'Pro Active';
         elTrialLeft.style.display = 'inline-block';
         setPro(true);
         return;
@@ -434,7 +442,7 @@
         toast("✅ Image saved to Gallery!"); 
       } catch (e) {
         console.warn("Failed to save to gallery:", e);
-        toast("❌ Auto-save failed");
+        toast("❌ Auto-save failed. Check Console.");
       }
     }
 
